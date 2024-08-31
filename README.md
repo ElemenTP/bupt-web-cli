@@ -17,7 +17,7 @@ Example 2: check network status
 Example 3: login with yaml config file
 `bupt-web-cli login -c CONFIG_FILE_PATH`
 
-example config.yaml in example folder
+example config.yaml in example folder  
 by default, `-c` uses `$HOME/.config/bupt-web-cli/config.yaml`. If you follow this manner, just run
 `bupt-web-cli login`
 
@@ -29,5 +29,5 @@ Example 4: logout
 Example 5: Run as a deamon
 `bupt-web-cli login -c CONFIG_FILE_PATH`
 
-config file manner is like `login`
+config file manner is like `login`  
 suggest use with systemd service file in example folder

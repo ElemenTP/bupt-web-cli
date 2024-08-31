@@ -1,0 +1,30 @@
+checksum:
+  name_template: "{{ .ProjectName }}_sha256checksums.txt"
+  algorithm: sha256
+builds:
+  - binary: bupt-web-cli
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - arm
+      - amd64
+      - arm64
+    goarm:
+      - "7"
+    flags:
+      - -trimpath
+    ldflags:
+      - -w -s -buildid=
+      - -X bupt-web-cli/cmd.Version={{.Version}}
+      - -X bupt-web-cli/cmd.BuildTime={{.Date}}
+    env:
+      - CGO_ENABLED=0
+archives:
+  - format: tar.gz
+    format_overrides:
+      - goos: windows
+        format: zip
+release:
+  draft: true
