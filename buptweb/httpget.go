@@ -6,12 +6,12 @@ import (
 	"net/url"
 )
 
-func HttpGet(turl string, params, headers map[string]string) (string, error) {
+func HttpGet(turl string, params, headers map[string]string, followredirect bool) (string, int, error) {
 	furl := turl
 	if params != nil {
 		u, err := url.Parse(turl)
 		if err != nil {
-			return "", err
+			return "", 0, err
 		}
 		uparams := u.Query()
 		for k, v := range params {
@@ -22,19 +22,24 @@ func HttpGet(turl string, params, headers map[string]string) (string, error) {
 	}
 	req, err := http.NewRequest(http.MethodGet, furl, nil)
 	if err != nil {
-		return "", err
+		return "", 0, err
 	}
 	for k, v := range headers {
 		req.Header.Add(k, v)
 	}
+	if followredirect {
+		client.CheckRedirect = nil
+	} else {
+		client.CheckRedirect = noredirectfunc
+	}
 	resp, err := client.Do(req)
 	if err != nil {
-		return "", err
+		return "", 0, err
 	}
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", err
+		return "", resp.StatusCode, err
 	}
-	return string(body), nil
+	return string(body), resp.StatusCode, nil
 }

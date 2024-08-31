@@ -6,7 +6,7 @@ import (
 )
 
 func Logout() {
-	state, respbody, err := doLogout()
+	state, err := doLogout()
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -18,30 +18,56 @@ func Logout() {
 	case s_failed:
 		log.Fatalln("not logged in")
 	case s_unknown:
-		log.Println("unknown status", "response body:\n", respbody)
+		log.Println("unknown status")
 	}
 }
 
-func doLogout() (Status, string, error) {
-	state, respbody, err := doCheck()
+func doLogout() (Status, error) {
+	state, err := doCheck()
 	if err != nil {
-		return s_error, "", err
+		return s_error, err
 	}
-	switch state {
-	case s_failed:
-		return s_failed, respbody, nil
-	case s_noneed:
-		return s_noneed, respbody, nil
+	if state == s_failed {
+		return s_noneed, nil
 	}
-	respbody, err = HttpGet(BASE_URL+"/logout", nil, HEADERS)
-	if err != nil {
-		return s_error, "", err
+	switch config.NetworkType {
+	case "auto":
+		fallthrough
+	case "portal":
+		respbody, _, err := HttpGet(PORTAL_BASE_URL+"/logout", nil, HEADERS, true)
+		if err != nil {
+			return s_error, err
+		}
+		if strings.Contains(respbody, "您所在的网络无需认证") {
+			if config.NetworkType == "portal" {
+				return s_noneed, nil
+			}
+		} else {
+			state, err := doCheck()
+			if err != nil {
+				return s_error, err
+			}
+			if state == s_failed {
+				return s_success, nil
+			} else if config.NetworkType == "portal" {
+				return s_failed, nil
+			}
+		}
+		fallthrough
+	case "wired":
+		_, _, err := HttpGet(WIRED_BASE_URL+"/logout", nil, HEADERS, true)
+		if err != nil {
+			return s_error, err
+		}
+		state, err := doCheck()
+		if err != nil {
+			return s_error, err
+		}
+		if state == s_failed {
+			return s_success, nil
+		} else {
+			return s_failed, nil
+		}
 	}
-	if strings.Contains(respbody, "您所在的网络无需认证") {
-		return s_noneed, respbody, nil
-	} else if strings.Contains(respbody, "placeholder=\"输入密码\"") {
-		return s_success, respbody, nil
-	} else {
-		return s_unknown, respbody, nil
-	}
+	return s_unknown, nil
 }

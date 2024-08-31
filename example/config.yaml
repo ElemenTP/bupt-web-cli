@@ -1,0 +1,11 @@
+# username to login, typically student id
+username: "2099114514"
+
+# password to login, typically your password of campus network
+password: "yajusenpai1919810"
+
+# when run in daemon mode, the time interval of check and login (unit: s)
+interval: 300
+
+# network type, select between "auto", "portal" and "wired"
+network-type: auto

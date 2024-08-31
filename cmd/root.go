@@ -12,8 +12,9 @@ import (
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "bupt-web-cli",
-	Short: "A tool for login/logout campus network of bupt",
-	Long:  "Command line interface for login/logout campus network of bupt.",
+	Short: "a tool for login/logout campus network of bupt",
+	Long:  "command line interface for login/logout campus network of bupt.",
+	Args:  cobra.NoArgs,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.

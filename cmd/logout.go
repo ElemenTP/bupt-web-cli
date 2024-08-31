@@ -13,6 +13,7 @@ import (
 var logoutCmd = &cobra.Command{
 	Use:   "logout",
 	Short: "logout campus network",
+	Args:  cobra.NoArgs,
 	Run: func(_ *cobra.Command, _ []string) {
 		buptweb.Logout()
 	},

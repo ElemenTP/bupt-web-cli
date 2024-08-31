@@ -1,0 +1,12 @@
+[Unit]
+Description=BUPT web login daemon for %i.
+After=network.target
+
+[Service]
+Type=exec
+User=%i
+Restart=on-abort
+ExecStart=/usr/bin/bupt-web-cli daemon
+
+[Install]
+WantedBy=multi-user.target

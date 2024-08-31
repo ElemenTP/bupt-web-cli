@@ -13,6 +13,7 @@ import (
 var checkCmd = &cobra.Command{
 	Use:   "check",
 	Short: "check network status",
+	Args:  cobra.NoArgs,
 	Run: func(_ *cobra.Command, _ []string) {
 		buptweb.Check()
 	},

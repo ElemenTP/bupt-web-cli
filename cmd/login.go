@@ -5,7 +5,6 @@ package cmd
 
 import (
 	"bupt-web-cli/buptweb"
-	"encoding/json"
 	"log"
 	"os"
 
@@ -13,64 +12,41 @@ import (
 )
 
 var (
-	username string
-	password string
-	secrets  string
+	login_username string
+	login_password string
+	login_config   string
 )
 
 // loginCmd represents the login command
 var loginCmd = &cobra.Command{
 	Use:   "login",
 	Short: "login campus network",
-	Long: `Either call "bupt-web-cli login --username YOUR_USERNAME --password YOUR_PASSWORD"
-or "bupt-web-cli login --secrets SECRETS_JSON_FILENAME"
-or "bupt-web-cli login", which will search secrets.json in working dir to login.`,
+	Long: `either call "bupt-web-cli login --username YOUR_USERNAME --password YOUR_PASSWORD"
+or "bupt-web-cli login --config SECRETS_JSON_FILENAME"
+or "bupt-web-cli login", which will search config.yaml in working dir to login.`,
 	Args: cobra.NoArgs,
 	Run: func(_ *cobra.Command, _ []string) {
-		if len(username) != 0 && len(password) != 0 {
+		if len(login_username) != 0 && len(login_password) != 0 {
 			log.Println("reading username and password from command line arguments")
+			buptweb.SetNameAndPass(login_username, login_password)
 		} else {
-			log.Printf("reading username and password from json \"%s\".\n", secrets)
-			jsonFile, err := os.ReadFile(secrets)
+			log.Printf("reading username and password from yaml \"%s\"", login_config)
+			buf, err := os.ReadFile(login_config)
 			if err != nil {
 				log.Fatalln(err)
 			}
-			j := make(map[string]interface{})
-			err = json.Unmarshal(jsonFile, &j)
+			err = buptweb.ParseConfig(buf)
 			if err != nil {
 				log.Fatalln(err)
 			}
-			for k, v := range j {
-				if k == "username" {
-					switch v := v.(type) {
-					case string:
-						username = v
-					default:
-						log.Fatalln("username must be a string")
-					}
-				} else if k == "password" {
-					switch v := v.(type) {
-					case string:
-						password = v
-					default:
-						log.Fatalln("password must be a string")
-					}
-				} else {
-					continue
-				}
-			}
 		}
-		log.Printf("received username = \"%s\" and password = \"%s\"", username, password)
-		if len(username) == 0 || len(password) == 0 {
-			log.Fatal("username or password is empty")
-		}
-		buptweb.Login(username, password)
+		buptweb.Login()
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(loginCmd)
-	loginCmd.Flags().StringVarP(&username, "username", "u", "", "Username to login, typically your student id")
-	loginCmd.Flags().StringVarP(&password, "password", "p", "", "Password to login, typically your password campus network")
-	loginCmd.Flags().StringVarP(&secrets, "secrets", "s", "secrets.json", "Should be a json file with `username` and `password` inside, values are string")
+	loginCmd.Flags().StringVarP(&login_username, "username", "u", "", "username to login, typically your student id")
+	loginCmd.Flags().StringVarP(&login_password, "password", "p", "", "password to login, typically your password of campus network")
+	loginCmd.Flags().StringVarP(&login_config, "config", "c", buptweb.DefaultConfigPath, "should be a yaml file with 'username' and 'password' inside, values are string")
 }
